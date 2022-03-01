@@ -17,4 +17,4 @@
 больше инфы:
     https://intel.github.io/llvm-docs/GetStartedGuide.html#run-simple-dpc-application
 
-    clang++ -fsycl -fsycl-targets=nvptx64-nvidia-cuda simple-sycl-app.cpp -o simple-sycl-app-cuda.exe
+clang++ -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64_x86_64 %1 -o app.exe
