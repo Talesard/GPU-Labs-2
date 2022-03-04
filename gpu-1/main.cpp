@@ -26,7 +26,6 @@ void hello_world() {
                // 4 work items, 4 groups, 1 work item in each group
                cgh.parallel_for(sycl::nd_range<1>(sycl::range<1>(4), sycl::range<1>(1)), [=](sycl::nd_item<1> item) {
                    out << "[" << item.get_global_id(0) << "] Hello from platform " << p_id << " and device " << d_id << sycl::endl;
-                   out << item.get_group(0) << sycl::endl;
                });
             });
             queue.wait();
