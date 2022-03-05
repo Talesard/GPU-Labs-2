@@ -21,23 +21,24 @@ void hello_world() {
        for (int d_id = 0; d_id < devices.size(); d_id++) {
            sycl::queue queue((devices[d_id]));
            std::cout << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
+           {
+                sycl::buffer<int> buf_p_id(&p_id, 1);
+                sycl::buffer<int> buf_d_id(&d_id, 1);
 
-           sycl::buffer<int> buf_p_id(&p_id, 1);
-           sycl::buffer<int> buf_d_id(&d_id, 1);
+                queue.submit([&](sycl::handler& cgh) {
+                    sycl::stream out(1024, 80, cgh);
 
-           queue.submit([&](sycl::handler& cgh) {
-               sycl::stream out(1024, 80, cgh);
+                    auto acc_p_id = buf_p_id.get_access<sycl::access::mode::read>(cgh);
+                    auto acc_d_id = buf_d_id.get_access<sycl::access::mode::read>(cgh);
 
-               auto acc_p_id = buf_p_id.get_access<sycl::access::mode::read>(cgh);
-               auto acc_d_id = buf_d_id.get_access<sycl::access::mode::read>(cgh);
-
-               // 4 work items, 4 groups, 1 work item in each group
-               cgh.parallel_for(sycl::nd_range<1>(sycl::range<1>(4), sycl::range<1>(1)), [=](sycl::nd_item<1> item) {
-                   out << "[" << item.get_global_id(0) << "] Hello from platform " << acc_p_id[0] << " and device " << acc_d_id[0] << sycl::endl;
-               });
-            });
-            queue.wait();
-            std::cout << std::endl;
+                    // 4 work items, 4 groups, 1 work item in each group
+                    cgh.parallel_for(sycl::nd_range<1>(sycl::range<1>(4), sycl::range<1>(1)), [=](sycl::nd_item<1> item) {
+                        out << "[" << item.get_global_id(0) << "] Hello from platform " << acc_p_id[0] << " and device " << acc_d_id[0] << sycl::endl;
+                    });
+                    });
+                    queue.wait();
+                    std::cout << std::endl;
+           }
        }
    }
 }
