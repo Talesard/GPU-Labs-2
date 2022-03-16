@@ -19,7 +19,7 @@ std::pair<int, std::string> parse_args(int argc, char* argv[]) {
     int N;
     std::string device;
     try {
-        if (argc < 2) throw -1;
+        if (argc < 3) throw -1;
         N = atoi(argv[1]);
         if (N == 0) throw -1;
         device = argv[2];
@@ -91,20 +91,16 @@ void integral(int N, std::string device_type) {
         result += group_results[i];
     }
 
-    std::cout << "Number of rectangles: " << N << " x " << N << std::endl;
-    std::cout << "Target device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
-    std::cout << "Kernel time: " << (end_time - start_time) / 1000000 << " ms" << std::endl;
-    std::cout << "Expected: " << analytical_solution() << std::endl;
-    std::cout << "Computed: " << result << std::endl;
-    std::cout << "Difference: " << fabs(result - analytical_solution()) << std::endl;
+    std::cout << "Number of rectangles:\t" << N << " x " << N << std::endl;
+    std::cout << "Target device:\t\t" << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
+    std::cout << "Kernel time:\t\t" << (end_time - start_time) / 1000000 << " ms" << std::endl;
+    std::cout << "Expected:\t\t" << analytical_solution() << std::endl;
+    std::cout << "Computed:\t\t" << result << std::endl;
+    std::cout << "Difference:\t\t" << fabs(result - analytical_solution()) << std::endl;
 }
 
 int main(int argc, char* argv[]) {
     auto args = parse_args(argc, argv);
-    int N = args.first;
-    std::string device_type = args.second;
-
-    integral(N, device_type);
-
+    integral(args.first, args.second);
     return 0;
 }

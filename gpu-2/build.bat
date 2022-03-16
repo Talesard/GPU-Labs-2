@@ -6,4 +6,4 @@ set PATH=%DPCPP_HOME%\llvm\build\bin;%PATH%
 set LIB=%DPCPP_HOME%\llvm\build\lib;%LIB%
 
 @echo on
-clang++ -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64_x86_64 %1 -o app.exe
+clang++ -Wno-unknown-cuda-version -Wno-linker-warnings -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64_x86_64 %1 -o app.exe
