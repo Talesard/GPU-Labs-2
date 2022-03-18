@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <numeric>
 
 void print_info() {
     std::vector<sycl::platform> platforms = sycl::platform::get_platforms();
@@ -46,7 +47,10 @@ void integral(int N, std::string device_type) {
         queue = sycl::queue(sycl::cpu_selector{}, {sycl::property::queue::enable_profiling()});
     } else if (device_type == "gpu") {
         queue = sycl::queue(sycl::gpu_selector{}, {sycl::property::queue::enable_profiling()});
-    } else {std::cout << "Selector error" << std::endl; exit(-1);}
+    } else {
+        std::cout << "Selector error" << std::endl;
+        exit(-1);
+    }
 
     std::vector<float> group_results(group_count * group_count);
     std::fill(group_results.begin(), group_results.end(), 0.0f);
@@ -60,14 +64,14 @@ void integral(int N, std::string device_type) {
                 sycl::stream out(1024, 80, cgh);
                 auto group_results_acc = group_results_buff.get_access<sycl::access::mode::write>(cgh);
                 cgh.parallel_for(sycl::nd_range<2>(sycl::range<2>(group_count*group_size, group_count*group_size), sycl::range<2>(group_size, group_size)), [=](sycl::nd_item<2> item) {
-                    float begin_x = (item.get_global_id(0) + 0.5) / N; // why 0.5
-                    float begin_y = (item.get_global_id(1) + 0.5) / N; // why 0.5
+                    float begin_x = (float)(item.get_global_id(0) + 0.5) / (float)N; // why 0.5
+                    float begin_y = (float)(item.get_global_id(1) + 0.5) / (float)N; // why 0.5
                     float step = (float)(group_count * group_size) / N;
                     float work_item_sum = 0;
 
                     for (float x = begin_x; x <= 1.0f; x+=step) {
                         for (float y = begin_y; y <= 1.0f; y+=step) {
-                            work_item_sum += sycl::sin(x) * sycl::cos(y) / N / N; // sycl::sin sycl::cos !!!
+                            work_item_sum += sycl::sin(x) * sycl::cos(y); // sycl::sin sycl::cos !!!
                         }
                     }
 
@@ -86,10 +90,7 @@ void integral(int N, std::string device_type) {
     }
 
 
-    float result = 0;
-    for (int i = 0; i < group_results.size(); i++) {
-        result += group_results[i];
-    }
+    float result = std::accumulate(group_results.begin(), group_results.end(), 0.0f) / N / N;
 
     std::cout << "Number of rectangles:\t" << N << " x " << N << std::endl;
     std::cout << "Target device:\t\t" << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
