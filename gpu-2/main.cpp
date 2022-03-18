@@ -39,8 +39,8 @@ float analytical_solution(){
 }
 
 void integral(int N, std::string device_type) {
-    const int group_count = 16;
-    const int group_size = 16;
+    const int group_count = 8;
+    const int group_size = 8;
 
     sycl::queue queue;
     if (device_type == "cpu") {
@@ -54,9 +54,9 @@ void integral(int N, std::string device_type) {
 
     std::vector<float> group_results(group_count * group_count);
     std::fill(group_results.begin(), group_results.end(), 0.0f);
-
+    const int interval_per_work_item = (float)(N / (group_count * group_size));
+    const float step = 1.0f / N;
     uint64_t start_time, end_time = 0;
-
     {
         sycl::buffer<float> group_results_buff(group_results.data(), group_results.size());
         try {
@@ -64,21 +64,25 @@ void integral(int N, std::string device_type) {
                 sycl::stream out(1024, 80, cgh);
                 auto group_results_acc = group_results_buff.get_access<sycl::access::mode::write>(cgh);
                 cgh.parallel_for(sycl::nd_range<2>(sycl::range<2>(group_count*group_size, group_count*group_size), sycl::range<2>(group_size, group_size)), [=](sycl::nd_item<2> item) {
-                    float begin_x = (float)(item.get_global_id(0) + 0.5) / (float)N; // why 0.5
-                    float begin_y = (float)(item.get_global_id(1) + 0.5) / (float)N; // why 0.5
-                    float step = (float)(group_count * group_size) / N;
-                    float work_item_sum = 0;
 
-                    for (float x = begin_x; x <= 1.0f; x+=step) {
-                        for (float y = begin_y; y <= 1.0f; y+=step) {
-                            work_item_sum += sycl::sin(x) * sycl::cos(y); // sycl::sin sycl::cos !!!
+                    float begin_x = (float)(interval_per_work_item * item.get_global_id(0)) / (float)N;
+                    float begin_y = (float)(interval_per_work_item * item.get_global_id(1)) / (float)N;
+
+                    float end_x = begin_x + (float)interval_per_work_item * step;
+                    float end_y = begin_y + (float)interval_per_work_item * step;
+
+                    float work_item_res = 0.0f;
+                    for (float x = begin_x; x <= end_x; x += step) {
+                        for (float y = begin_y; y <= end_y;  y += step) {
+                            work_item_res += sycl::sin((x + x + step) / 2.0f) * sycl::cos((y + y + step) / 2.0f) * step * step;
                         }
                     }
 
-                    float group_sum = sycl::reduce_over_group(item.get_group(), work_item_sum, std::plus<float>());
+                    float group_sum = sycl::reduce_over_group(item.get_group(), work_item_res, std::plus<float>());
                     if (item.get_local_id() == 0) {
                         group_results_acc[item.get_group(0) + item.get_group(1)*group_count] = group_sum;
                     }
+                    
                 });
             });
             queue.wait_and_throw();
@@ -89,8 +93,7 @@ void integral(int N, std::string device_type) {
         }
     }
 
-
-    float result = std::accumulate(group_results.begin(), group_results.end(), 0.0f) / N / N;
+    float result = std::accumulate(group_results.begin(), group_results.end(), 0.0f);
 
     std::cout << "Number of rectangles:\t" << N << " x " << N << std::endl;
     std::cout << "Target device:\t\t" << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
