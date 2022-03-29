@@ -61,27 +61,28 @@ void integral(int N, std::string device_type) {
         sycl::buffer<float> group_results_buff(group_results.data(), group_results.size());
         try {
             sycl::event event = queue.submit([&](sycl::handler& cgh) {
-                sycl::stream out(1024, 80, cgh);
                 auto group_results_acc = group_results_buff.get_access<sycl::access::mode::write>(cgh);
                 cgh.parallel_for(sycl::nd_range<2>(sycl::range<2>(group_count*group_size, group_count*group_size), sycl::range<2>(group_size, group_size)), [=](sycl::nd_item<2> item) {
 
-                    float begin_x = (float)(interval_per_work_item * item.get_global_id(0)) / (float)N;
-                    float begin_y = (float)(interval_per_work_item * item.get_global_id(1)) / (float)N;
+                float begin_x = (float)(interval_per_work_item * item.get_global_id(0)) / (float)N;
+                float begin_y = (float)(interval_per_work_item * item.get_global_id(1)) / (float)N;
 
-                    float end_x = begin_x + (float)interval_per_work_item * step;
-                    float end_y = begin_y + (float)interval_per_work_item * step;
+                float end_x = begin_x + (float)interval_per_work_item * step;
+                float end_y = begin_y + (float)interval_per_work_item * step;
 
-                    float work_item_res = 0.0f;
-                    for (float x = begin_x; x <= end_x; x += step) {
-                        for (float y = begin_y; y <= end_y;  y += step) {
-                            work_item_res += sycl::sin((x + x + step) / 2.0f) * sycl::cos((y + y + step) / 2.0f) * step * step;
-                        }
+                float work_item_res = 0.0f;
+                for (float x = begin_x; x <= end_x; x += step) {
+                    for (float y = begin_y; y <= end_y;  y += step) {
+                        work_item_res += sycl::sin((x + x + step) / 2.0f) * sycl::cos((y + y + step) / 2.0f) * step * step;
                     }
+                }
 
-                    float group_sum = sycl::reduce_over_group(item.get_group(), work_item_res, std::plus<float>());
-                    if (item.get_local_id() == 0) {
-                        group_results_acc[item.get_group(0) + item.get_group(1)*group_count] = group_sum;
-                    }
+
+
+                float group_sum = sycl::reduce_over_group(item.get_group(), work_item_res, std::plus<float>());
+                if (item.get_local_id() == 0) {
+                    group_results_acc[item.get_group(0) + item.get_group(1)*group_count] = group_sum;
+                }
                     
                 });
             });
