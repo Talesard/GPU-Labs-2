@@ -18,45 +18,38 @@ void print_info() {
     std::cout << std::endl;
 }
 
-// ---------- WTF ----------
-static float vectorLength(const float *x, size_t n) {
-    float s = 0;
-    for (size_t i = 0; i < n; i++) {
-        s += x[i] * x[i];
+
+float base_accuracy(std::vector<float> xk, std::vector<float> xk1) {
+    float sum = 0.0f;
+    for (int i = 0; i < xk.size(); i++) {
+        float tmp = xk[i] - xk1[i];
+        sum += tmp * tmp;
     }
-    return std::sqrt(s);
+    return std::sqrt(sum);
 }
 
-static float normAbs(const float *x0, const float *x1, size_t n) {
-    float s = 0;
-    for (size_t i = 0; i < n; i++) {
-        s += (x0[i] - x1[i]) * (x0[i] - x1[i]);
+float relative_accuracy(std::vector<float> xk, std::vector<float> xk1) {
+    float top = 0.0f;
+    float bot = 0.0f;
+    for (int i = 0; i < xk.size(); i++) {
+        float tmp = xk[i] - xk1[i];
+        top += tmp * tmp;
+        bot += xk[i] * xk[i];
     }
-    return std::sqrt(s);
+    return std::sqrt(top) / std::sqrt(bot);
 }
 
-static float normRel(const float *x0, const float *x1, size_t n) {
-    return normAbs(x0, x1, n) / vectorLength(x0, n);
-}
-
-float norm(const std::vector<float> &x0, const std::vector<float> &x1) {
-    return normRel(x0.data(), x1.data(), x0.size());
-}
-
-static float deviationAbs(const float *a, const float *b, const float *x, int n) {
-    float norm = 0;
-    for (int i = 0; i < n; i++) {
-        float s = 0;
-        for (int j = 0; j < n; j++) {
-            s += a[j * n + i] * x[j];
+float achived_accuracy(std::vector<float> A, std::vector<float> b, std::vector<float> x) {
+    float result = 0.0f;
+    for (int i = 0; i < b.size(); i++) {
+        float tmp = 0.0f - b[i];
+        for (int j = 0; j < b.size(); j++) {
+            tmp += A[j * b.size() + i] * x[j];
         }
-        s -= b[i];
-        norm += s * s;
+        result += tmp * tmp;
     }
-    return sqrt(norm);
+    return std::sqrt(result);
 }
-
-// ---------- WTF ----------
 
 std::vector<float> random_vector(int size, float min, float max) {
     std::mt19937 gen(time(0));
@@ -78,6 +71,10 @@ std::pair<std::vector<float>, std::vector<float>> get_random_system(int N) {
     return std::pair<std::vector<float>, std::vector<float>>{A, b};
 }
 
+void print_results(std::string version, long long time, float accuracy, int iters, int max_iters) {
+    std::cout << "[" << version << "] " << "Time: " << time << " ms Accuracy: " << accuracy << " Iters: " << iters << " / " << max_iters << std::endl;
+}
+
 std::vector<float> jacobi_accessors(int N, float target_accuracy, int max_iters, std::string device_type, std::vector<float> A, std::vector<float> b) {
     sycl::queue queue;
     if (device_type == "cpu") {
@@ -92,8 +89,8 @@ std::vector<float> jacobi_accessors(int N, float target_accuracy, int max_iters,
     sycl::buffer<float> A_buff(A.data(), A.size());
     sycl::buffer<float> b_buff(b.data(), b.size());
 
-    std::vector<float> x0;
-    std::vector<float> x1 = b;
+    std::vector<float> xk;
+    std::vector<float> xk1 = b;
 
     int iter_counter = 0;
     float accuracy = 0.0f;
@@ -102,46 +99,43 @@ std::vector<float> jacobi_accessors(int N, float target_accuracy, int max_iters,
 
     do {
         iter_counter++;
-        x0 = x1;
+        xk = xk1;
         {
-            sycl::buffer<float> x0_buff(x0.data(), x0.size());
-            sycl::buffer<float> x1_buff(x1.data(), x1.size());
+            sycl::buffer<float> xk_buff(xk.data(), xk.size());
+            sycl::buffer<float> xk1_buff(xk1.data(), xk1.size());
             sycl::event event = queue.submit([&](sycl::handler &cgh) {
                 auto A_acc = A_buff.get_access<sycl::access::mode::read>(cgh);
                 auto b_acc = b_buff.get_access<sycl::access::mode::read>(cgh);
-                auto x0_acc = x0_buff.get_access<sycl::access::mode::read>(cgh);
-                auto x1_acc = x1_buff.get_access<sycl::access::mode::write>(cgh);
+                auto xk_acc = xk_buff.get_access<sycl::access::mode::read>(cgh);
+                auto xk1_acc = xk1_buff.get_access<sycl::access::mode::write>(cgh);
 
                 cgh.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
                     int i = item.get_id(0);
                     int n = item.get_range(0);
                     float s = 0.0f;
                     for (int j = 0; j < n; j++) {
-                        s += i != j ? A_acc[j*n+i] * x0_acc[j] : 0;
+                        s += i != j ? A_acc[j*n+i] * xk_acc[j] : 0;
                     }
-                    x1_acc[i] = (b_acc[i]-s) / A_acc[i*n+i];
+                    xk1_acc[i] = (b_acc[i]-s) / A_acc[i*n+i];
                 });
             });
             queue.wait();
         }
-        accuracy = norm(x0, x1);
+        accuracy = relative_accuracy(xk, xk1);
     } while (iter_counter < max_iters && accuracy > target_accuracy);
 
     auto end_time = std::chrono::steady_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
-    float final_accuracy = deviationAbs(A.data(), b.data(), x1.data(), N);
+    float final_accuracy = achived_accuracy(A, b, xk1);
 
-    std::cout << "[Accessors]" << std::endl;
-    std::cout << "Device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
-    std::cout << "Time: " << elapsed_ms.count() << " ms" << std::endl;
-    std::cout << "Iters: " << iter_counter << " / " << max_iters << std::endl;
-    std::cout << "Accuracy " << final_accuracy << " / " << target_accuracy << std::endl;
+    std::cout << "Target device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
+    print_results("Accessors", elapsed_ms.count(), final_accuracy, iter_counter, max_iters);
 
-    return x1;
+    return xk1;
 }
 
-void jacobi_shared_mem(int N, float target_accuracy, int max_iters, std::string device_type, std::vector<float> A, std::vector<float> b) {
+std::vector<float> jacobi_shared_mem(int N, float target_accuracy, int max_iters, std::string device_type, std::vector<float> A, std::vector<float> b) {
     sycl::queue queue;
     if (device_type == "cpu") {
         queue = sycl::queue(sycl::cpu_selector{}, {sycl::property::queue::enable_profiling()});
@@ -152,9 +146,62 @@ void jacobi_shared_mem(int N, float target_accuracy, int max_iters, std::string 
         exit(-1);
     }
 
+    float* A_shared = sycl::malloc_shared<float>(A.size(), queue);
+    float* b_shared = sycl::malloc_shared<float>(b.size(), queue);
+    std::vector<float> xk(b.size());
+    float* xk_shared = sycl::malloc_shared<float>(xk.size(), queue);
+    std::vector<float> xk1 = b;
+    float* xk1_shared = sycl::malloc_shared<float>(xk1.size(), queue);
+
+    queue.memcpy(A_shared, A.data(), A.size()*sizeof(float)).wait();
+    queue.memcpy(b_shared, b.data(), b.size()*sizeof(float)).wait();
+    queue.memcpy(xk_shared, xk.data(), xk.size()*sizeof(float)).wait();
+    queue.memcpy(xk1_shared, xk1.data(), xk1.size()*sizeof(float)).wait();
+    
+
+
+    int iter_counter = 0;
+    float accuracy = 0.0f;
+
+    auto start_time = std::chrono::steady_clock::now();
+
+    do {
+        iter_counter++;
+        queue.memcpy(xk_shared, xk1_shared, xk.size()*sizeof(float)).wait();
+        sycl::event event = queue.submit([&](sycl::handler &cgh) {
+            cgh.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
+                int i = item.get_id(0);
+                int n = item.get_range(0);
+                float s = 0.0f;
+                for (int j = 0; j < n; j++) {
+                    s += i != j ? A_shared[j*n+i] * xk_shared[j] : 0;
+                }
+                xk1_shared[i] = (b_shared[i]-s) / A_shared[i*n+i];
+            });
+        });
+        queue.wait();
+        queue.memcpy(xk.data(), xk_shared, xk.size()*sizeof(float)).wait();
+        queue.memcpy(xk1.data(), xk1_shared, xk1.size()*sizeof(float)).wait();
+        accuracy = relative_accuracy(xk, xk1);
+    } while (iter_counter < max_iters && accuracy > target_accuracy);
+
+    auto end_time = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+    float final_accuracy = achived_accuracy(A, b, xk1);
+
+    sycl::free(A_shared, queue);
+    sycl::free(b_shared, queue);
+    sycl::free(xk_shared, queue);
+    sycl::free(xk1_shared, queue);
+
+    print_results("  Shared ", elapsed_ms.count(), final_accuracy, iter_counter, max_iters);
+
+    return xk1;
+
 }
 
-void jacobi_device_mem(int N, float target_accuracy, int max_iters, std::string device_type, std::vector<float> A, std::vector<float> b) {
+std::vector<float> jacobi_device_mem(int N, float target_accuracy, int max_iters, std::string device_type, std::vector<float> A, std::vector<float> b) {
     sycl::queue queue;
     if (device_type == "cpu") {
         queue = sycl::queue(sycl::cpu_selector{}, {sycl::property::queue::enable_profiling()});
@@ -165,6 +212,58 @@ void jacobi_device_mem(int N, float target_accuracy, int max_iters, std::string 
         exit(-1);
     }
 
+    float* A_device = sycl::malloc_device<float>(A.size(), queue);
+    float* b_device = sycl::malloc_device<float>(b.size(), queue);
+    std::vector<float> xk(b.size());
+    float* xk_device = sycl::malloc_device<float>(xk.size(), queue);
+    std::vector<float> xk1 = b;
+    float* xk1_device = sycl::malloc_device<float>(xk1.size(), queue);
+
+    queue.memcpy(A_device, A.data(), A.size()*sizeof(float)).wait();
+    queue.memcpy(b_device, b.data(), b.size()*sizeof(float)).wait();
+    queue.memcpy(xk_device, xk.data(), xk.size()*sizeof(float)).wait();
+    queue.memcpy(xk1_device, xk1.data(), xk1.size()*sizeof(float)).wait();
+    
+
+
+    int iter_counter = 0;
+    float accuracy = 0.0f;
+
+    auto start_time = std::chrono::steady_clock::now();
+
+    do {
+        iter_counter++;
+        queue.memcpy(xk_device, xk1_device, xk.size()*sizeof(float)).wait();
+        sycl::event event = queue.submit([&](sycl::handler &cgh) {
+            cgh.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
+                int i = item.get_id(0);
+                int n = item.get_range(0);
+                float s = 0.0f;
+                for (int j = 0; j < n; j++) {
+                    s += i != j ? A_device[j*n+i] * xk_device[j] : 0;
+                }
+                xk1_device[i] = (b_device[i]-s) / A_device[i*n+i];
+            });
+        });
+        queue.wait();
+        queue.memcpy(xk.data(), xk_device, xk.size()*sizeof(float)).wait();
+        queue.memcpy(xk1.data(), xk1_device, xk1.size()*sizeof(float)).wait();
+        accuracy = relative_accuracy(xk, xk1);
+    } while (iter_counter < max_iters && accuracy > target_accuracy);
+
+    auto end_time = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+    float final_accuracy = achived_accuracy(A, b, xk1);
+
+    sycl::free(A_device, queue);
+    sycl::free(b_device, queue);
+    sycl::free(xk_device, queue);
+    sycl::free(xk1_device, queue);
+
+    print_results("  Device ", elapsed_ms.count(), final_accuracy, iter_counter, max_iters);
+
+    return xk1;
 }
 
 int main(int argc, char* argv[]) {
@@ -175,8 +274,12 @@ int main(int argc, char* argv[]) {
     std::string device = argv[4];
 
     auto system = get_random_system(N);
-    auto res = jacobi_accessors(N, target_accuracy, max_iters, device, system.first, system.second);
-
+    auto res_accessors = jacobi_accessors(N, target_accuracy, max_iters, device, system.first, system.second);
+    auto res_shared_mem = jacobi_shared_mem(N, target_accuracy, max_iters, device, system.first, system.second);
+    auto res_device_mem = jacobi_device_mem(N, target_accuracy, max_iters, device, system.first, system.second);
+    assert(res_accessors == res_shared_mem);
+    assert(res_accessors == res_device_mem);
+    
     // for (int i = 0; i < N; i++) {
     //     for (int j = 0; j < N; j++) {
     //         std::cout << system.first[i * N + j] << " ";
@@ -184,7 +287,7 @@ int main(int argc, char* argv[]) {
     //     std::cout << " | " << system.second[i] << std::endl;
     // }
 
-    // for (auto v : res) std::cout << v << " ";
+    // for (auto v : res_accessors) std::cout << v << " ";
 
     return 0;
 }

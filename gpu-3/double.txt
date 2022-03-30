@@ -1,0 +1,4 @@
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 453 ms Accuracy: 0.000252228 Iters: 27 / 200
+[  Shared ] Time: 268 ms Accuracy: 0.000252228 Iters: 27 / 200
+[  Device ] Time: 268 ms Accuracy: 0.000252228 Iters: 27 / 200
