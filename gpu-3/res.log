@@ -1,0 +1,126 @@
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>echo "CPU vs GPU" 
+"CPU vs GPU"
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 1000 0.00001 200 gpu  
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 9 ms Accuracy: 0.000124746 (6.14763e-06) Iters: 24 / 200
+[  Shared ] Time: 9 ms Accuracy: 0.000124746 (6.14763e-06) Iters: 24 / 200
+[  Device ] Time: 9 ms Accuracy: 0.000124746 (6.14763e-06) Iters: 24 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 2000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 17 ms Accuracy: 0.00015817 (5.04251e-06) Iters: 25 / 200
+[  Shared ] Time: 14 ms Accuracy: 0.00015817 (5.04251e-06) Iters: 25 / 200
+[  Device ] Time: 13 ms Accuracy: 0.00015817 (5.04251e-06) Iters: 25 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 5000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 58 ms Accuracy: 0.000286978 (5.09267e-06) Iters: 26 / 200
+[  Shared ] Time: 37 ms Accuracy: 0.000286978 (5.09267e-06) Iters: 26 / 200
+[  Device ] Time: 36 ms Accuracy: 0.000286978 (5.09267e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 10000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 238 ms Accuracy: 0.000447569 (4.08162e-06) Iters: 27 / 200
+[  Shared ] Time: 143 ms Accuracy: 0.000447569 (4.08162e-06) Iters: 27 / 200
+[  Device ] Time: 141 ms Accuracy: 0.000447569 (4.08162e-06) Iters: 27 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 1000 0.00001 200 cpu  
+Target device: Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+[Accessors] Time: 14 ms Accuracy: 0.000124379 (6.22817e-06) Iters: 24 / 200
+[  Shared ] Time: 12 ms Accuracy: 0.000124379 (6.22817e-06) Iters: 24 / 200
+[  Device ] Time: 12 ms Accuracy: 0.000124379 (6.22817e-06) Iters: 24 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 2000 0.00001 200 cpu 
+Target device: Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+[Accessors] Time: 35 ms Accuracy: 0.000156344 (5.01876e-06) Iters: 25 / 200
+[  Shared ] Time: 35 ms Accuracy: 0.000156344 (5.01876e-06) Iters: 25 / 200
+[  Device ] Time: 35 ms Accuracy: 0.000156344 (5.01876e-06) Iters: 25 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 5000 0.00001 200 cpu 
+Target device: Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+[Accessors] Time: 374 ms Accuracy: 0.000284672 (5.08328e-06) Iters: 26 / 200
+[  Shared ] Time: 394 ms Accuracy: 0.000284672 (5.08328e-06) Iters: 26 / 200
+[  Device ] Time: 414 ms Accuracy: 0.000284672 (5.08328e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 10000 0.00001 200 cpu  
+Target device: Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+[Accessors] Time: 2374 ms Accuracy: 0.00044642 (4.08643e-06) Iters: 27 / 200
+[  Shared ] Time: 2555 ms Accuracy: 0.00044642 (4.08643e-06) Iters: 27 / 200
+[  Device ] Time: 2572 ms Accuracy: 0.00044642 (4.08643e-06) Iters: 27 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>echo "Test float error?" 
+"Test float error?"
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 100 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 4 ms Accuracy: 4.78828e-05 (7.57964e-06) Iters: 21 / 200
+[  Shared ] Time: 5 ms Accuracy: 4.78828e-05 (7.57964e-06) Iters: 21 / 200
+[  Device ] Time: 4 ms Accuracy: 4.78828e-05 (7.57964e-06) Iters: 21 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 200 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 5 ms Accuracy: 6.15076e-05 (7.08471e-06) Iters: 22 / 200
+[  Shared ] Time: 5 ms Accuracy: 6.15076e-05 (7.08471e-06) Iters: 22 / 200
+[  Device ] Time: 5 ms Accuracy: 6.15076e-05 (7.08471e-06) Iters: 22 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 1000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 9 ms Accuracy: 0.000126 (6.25655e-06) Iters: 24 / 200
+[  Shared ] Time: 8 ms Accuracy: 0.000126 (6.25655e-06) Iters: 24 / 200
+[  Device ] Time: 8 ms Accuracy: 0.000126 (6.25655e-06) Iters: 24 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 2000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 16 ms Accuracy: 0.000158073 (5.06638e-06) Iters: 25 / 200
+[  Shared ] Time: 13 ms Accuracy: 0.000158073 (5.06638e-06) Iters: 25 / 200
+[  Device ] Time: 12 ms Accuracy: 0.000158073 (5.06638e-06) Iters: 25 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 3000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 25 ms Accuracy: 0.000276604 (7.64382e-06) Iters: 25 / 200
+[  Shared ] Time: 18 ms Accuracy: 0.000276604 (7.64382e-06) Iters: 25 / 200
+[  Device ] Time: 18 ms Accuracy: 0.000276604 (7.64382e-06) Iters: 25 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 4000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 39 ms Accuracy: 0.000223069 (4.06479e-06) Iters: 26 / 200
+[  Shared ] Time: 26 ms Accuracy: 0.000223069 (4.06479e-06) Iters: 26 / 200
+[  Device ] Time: 27 ms Accuracy: 0.000223069 (4.06479e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 5000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 56 ms Accuracy: 0.000282901 (5.08284e-06) Iters: 26 / 200
+[  Shared ] Time: 35 ms Accuracy: 0.000282901 (5.08284e-06) Iters: 26 / 200
+[  Device ] Time: 36 ms Accuracy: 0.000282901 (5.08284e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 6000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 81 ms Accuracy: 0.000367918 (6.12568e-06) Iters: 26 / 200
+[  Shared ] Time: 51 ms Accuracy: 0.000367918 (6.12568e-06) Iters: 26 / 200
+[  Device ] Time: 53 ms Accuracy: 0.000367918 (6.12568e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 7000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 133 ms Accuracy: 0.000452719 (7.15765e-06) Iters: 26 / 200
+[  Shared ] Time: 89 ms Accuracy: 0.000452719 (7.15765e-06) Iters: 26 / 200
+[  Device ] Time: 86 ms Accuracy: 0.000452719 (7.15765e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 8000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 155 ms Accuracy: 0.000534717 (8.15061e-06) Iters: 26 / 200
+[  Shared ] Time: 99 ms Accuracy: 0.000534717 (8.15061e-06) Iters: 26 / 200
+[  Device ] Time: 100 ms Accuracy: 0.000534717 (8.15061e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 9000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 186 ms Accuracy: 0.000631555 (9.19325e-06) Iters: 26 / 200
+[  Shared ] Time: 117 ms Accuracy: 0.000631555 (9.19325e-06) Iters: 26 / 200
+[  Device ] Time: 117 ms Accuracy: 0.000631555 (9.19325e-06) Iters: 26 / 200
+
+C:\Users\veter\source\GPU-Labs-2\gpu-3>app.exe 10000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 226 ms Accuracy: 0.000449657 (4.08934e-06) Iters: 27 / 200
+[  Shared ] Time: 142 ms Accuracy: 0.000449657 (4.08934e-06) Iters: 27 / 200
+[  Device ] Time: 141 ms Accuracy: 0.000449657 (4.08934e-06) Iters: 27 / 200

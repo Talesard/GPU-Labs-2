@@ -18,7 +18,6 @@ void print_info() {
     std::cout << std::endl;
 }
 
-
 float base_accuracy(std::vector<float> xk, std::vector<float> xk1) {
     float sum = 0.0f;
     for (int i = 0; i < xk.size(); i++) {
@@ -71,8 +70,8 @@ std::pair<std::vector<float>, std::vector<float>> get_random_system(int N) {
     return std::pair<std::vector<float>, std::vector<float>>{A, b};
 }
 
-void print_results(std::string version, long long time, float accuracy, int iters, int max_iters) {
-    std::cout << "[" << version << "] " << "Time: " << time << " ms Accuracy: " << accuracy << " Iters: " << iters << " / " << max_iters << std::endl;
+void print_results(std::string version, long long time, float accuracy, float accuracy_while, int iters, int max_iters) {
+    std::cout << "[" << version << "] " << "Time: " << time << " ms Accuracy: " << accuracy << " (" << accuracy_while << ")" << " Iters: " << iters << " / " << max_iters << std::endl;
 }
 
 std::vector<float> jacobi_accessors(int N, float target_accuracy, int max_iters, std::string device_type, std::vector<float> A, std::vector<float> b) {
@@ -112,11 +111,13 @@ std::vector<float> jacobi_accessors(int N, float target_accuracy, int max_iters,
                 cgh.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
                     int i = item.get_id(0);
                     int n = item.get_range(0);
-                    float s = 0.0f;
+                    float sum = 0.0f;
                     for (int j = 0; j < n; j++) {
-                        s += i != j ? A_acc[j*n+i] * xk_acc[j] : 0;
+                        if (i != j) {
+                            sum += A_acc[i + j * n] * xk_acc[j];
+                        }
                     }
-                    xk1_acc[i] = (b_acc[i]-s) / A_acc[i*n+i];
+                    xk1_acc[i] = (b_acc[i] - sum) / A_acc[i + i * n];
                 });
             });
             queue.wait();
@@ -130,7 +131,7 @@ std::vector<float> jacobi_accessors(int N, float target_accuracy, int max_iters,
     float final_accuracy = achived_accuracy(A, b, xk1);
 
     std::cout << "Target device: " << queue.get_device().get_info<sycl::info::device::name>() << std::endl;
-    print_results("Accessors", elapsed_ms.count(), final_accuracy, iter_counter, max_iters);
+    print_results("Accessors", elapsed_ms.count(), final_accuracy, accuracy, iter_counter, max_iters);
 
     return xk1;
 }
@@ -168,18 +169,17 @@ std::vector<float> jacobi_shared_mem(int N, float target_accuracy, int max_iters
     do {
         iter_counter++;
         queue.memcpy(xk_shared, xk1_shared, xk.size()*sizeof(float)).wait();
-        sycl::event event = queue.submit([&](sycl::handler &cgh) {
-            cgh.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
-                int i = item.get_id(0);
-                int n = item.get_range(0);
-                float s = 0.0f;
-                for (int j = 0; j < n; j++) {
-                    s += i != j ? A_shared[j*n+i] * xk_shared[j] : 0;
+        queue.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
+            int i = item.get_id(0);
+            int n = item.get_range(0);
+            float sum = 0.0f;
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    sum += A_shared[i + j * n] * xk_shared[j];
                 }
-                xk1_shared[i] = (b_shared[i]-s) / A_shared[i*n+i];
-            });
-        });
-        queue.wait();
+            }
+            xk1_shared[i] = (b_shared[i] - sum) / A_shared[i + i * n];
+        }).wait();
         queue.memcpy(xk.data(), xk_shared, xk.size()*sizeof(float)).wait();
         queue.memcpy(xk1.data(), xk1_shared, xk1.size()*sizeof(float)).wait();
         accuracy = relative_accuracy(xk, xk1);
@@ -195,7 +195,7 @@ std::vector<float> jacobi_shared_mem(int N, float target_accuracy, int max_iters
     sycl::free(xk_shared, queue);
     sycl::free(xk1_shared, queue);
 
-    print_results("  Shared ", elapsed_ms.count(), final_accuracy, iter_counter, max_iters);
+    print_results("  Shared ", elapsed_ms.count(), final_accuracy, accuracy, iter_counter, max_iters);
 
     return xk1;
 
@@ -234,18 +234,17 @@ std::vector<float> jacobi_device_mem(int N, float target_accuracy, int max_iters
     do {
         iter_counter++;
         queue.memcpy(xk_device, xk1_device, xk.size()*sizeof(float)).wait();
-        sycl::event event = queue.submit([&](sycl::handler &cgh) {
-            cgh.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
-                int i = item.get_id(0);
-                int n = item.get_range(0);
-                float s = 0.0f;
-                for (int j = 0; j < n; j++) {
-                    s += i != j ? A_device[j*n+i] * xk_device[j] : 0;
+        queue.parallel_for(sycl::range<1>(b.size()), [=](sycl::item<1> item) {
+            int i = item.get_id(0);
+            int n = item.get_range(0);
+            float sum = 0.0f;
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    sum += A_device[i + j * n] * xk_device[j];
                 }
-                xk1_device[i] = (b_device[i]-s) / A_device[i*n+i];
-            });
-        });
-        queue.wait();
+            }
+            xk1_device[i] = (b_device[i] - sum) / A_device[i + i * n];
+        }).wait();
         queue.memcpy(xk.data(), xk_device, xk.size()*sizeof(float)).wait();
         queue.memcpy(xk1.data(), xk1_device, xk1.size()*sizeof(float)).wait();
         accuracy = relative_accuracy(xk, xk1);
@@ -261,7 +260,7 @@ std::vector<float> jacobi_device_mem(int N, float target_accuracy, int max_iters
     sycl::free(xk_device, queue);
     sycl::free(xk1_device, queue);
 
-    print_results("  Device ", elapsed_ms.count(), final_accuracy, iter_counter, max_iters);
+    print_results("  Device ", elapsed_ms.count(), final_accuracy, accuracy, iter_counter, max_iters);
 
     return xk1;
 }
@@ -279,7 +278,7 @@ int main(int argc, char* argv[]) {
     auto res_device_mem = jacobi_device_mem(N, target_accuracy, max_iters, device, system.first, system.second);
     assert(res_accessors == res_shared_mem);
     assert(res_accessors == res_device_mem);
-    
+
     // for (int i = 0; i < N; i++) {
     //     for (int j = 0; j < N; j++) {
     //         std::cout << system.first[i * N + j] << " ";
