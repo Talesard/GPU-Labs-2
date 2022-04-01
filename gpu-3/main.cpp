@@ -265,6 +265,37 @@ std::vector<float> jacobi_device_mem(int N, float target_accuracy, int max_iters
     return xk1;
 }
 
+float* jacobi_seq(float* A, float* b, int n, float targetAcc, int maxIters) {
+    float accuracy = 0.0f;
+    int iter_counter = 0;
+    float* xk = new float[n];
+    float* xk1 = new float[n];
+    for (int i = 0; i < n; i++) {
+        xk1[i] = b[i];
+        xk[i] = 0.0f;
+    }
+    auto start_time = std::chrono::steady_clock::now();
+    do {
+        std::swap(xk, xk1);
+        iter_counter++;
+        for (int i = 0; i < n; i++) {
+            float sum = 0.0f;
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    sum += A[j * n + i] * xk[j];
+                }  
+            }
+            xk1[i] = (1.0f / A[i * n + i]) * (b[i] - sum);
+        }
+        accuracy = relative_accuracy(std::vector(xk, xk+n), std::vector(xk1, xk1+n));
+    } while (iter_counter < maxIters && accuracy > targetAcc);
+    auto end_time = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    float final_accuracy = achived_accuracy(std::vector<float>(A, A+n*n), std::vector<float>(b, b+n), std::vector<float>(xk1, xk1+n));
+    print_results(" Seq cpu ", elapsed_ms.count(), final_accuracy, accuracy, iter_counter, maxIters);
+    return xk1;
+}
+
 int main(int argc, char* argv[]) {
     if (argc != 5) {std::cout << "Args error. Expected: N, accuracy, maxiters, device" << std::endl; exit(-1);}
     int N = atoi(argv[1]);
@@ -276,6 +307,7 @@ int main(int argc, char* argv[]) {
     auto res_accessors = jacobi_accessors(N, target_accuracy, max_iters, device, system.first, system.second);
     auto res_shared_mem = jacobi_shared_mem(N, target_accuracy, max_iters, device, system.first, system.second);
     auto res_device_mem = jacobi_device_mem(N, target_accuracy, max_iters, device, system.first, system.second);
+    //auto res_seq = jacobi_seq(system.first.data(), system.second.data(), N, target_accuracy, max_iters);
     assert(res_accessors == res_shared_mem);
     assert(res_accessors == res_device_mem);
 
