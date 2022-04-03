@@ -1,4 +1,9 @@
 # DPC++ (SYCL) Labs
+- [DPC++ (SYCL) Labs](#dpc-sycl-labs)
+  - [Install dependencies](#install-dependencies)
+  - [Build a program](#build-a-program)
+  - [Visual Studio Code settings](#visual-studio-code-settings)
+  - [List of labs](#list-of-labs)
 
 ## Install dependencies
 - Cuda (https://developer.nvidia.com/cuda-downloads)
@@ -38,3 +43,8 @@
     "version": 4
 }
 ```
+
+## List of labs
+- Hello, world!
+- Double integrals computatuion with Riemann sums
+- Solving SLE by the Jacobi method
