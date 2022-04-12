@@ -1,0 +1,72 @@
+
+C:\Users\veter\source\GPU-Labs-2>mkdir build 
+
+C:\Users\veter\source\GPU-Labs-2>set DPCPP_HOME=C:\Users\veter\sycl_workspace 
+
+C:\Users\veter\source\GPU-Labs-2>set PATH=C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\\Extensions\Microsoft\IntelliCode\CLI;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX64\x64;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VC\VCPackages;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TeamFoundation\Team Explorer;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\bin\Roslyn;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Team Tools\Performance Tools\x64;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Team Tools\Performance Tools;C:\Program Files (x86)\Microsoft Visual Studio\Shared\Common\VSPerfCollectionTools\vs2019\\x64;C:\Program Files (x86)\Microsoft Visual Studio\Shared\Common\VSPerfCollectionTools\vs2019\;C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\x64\;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\FSharp\Tools;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\devinit;C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64;C:\Program Files (x86)\Windows Kits\10\bin\x64;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\\MSBuild\Current\Bin;C:\Windows\Microsoft.NET\Framework64\v4.0.30319;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\;C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\libnvvp;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\libnvvp;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\dotnet\;C:\Program Files\CMake\bin;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files\Go\bin;C:\Program Files\NVIDIA Corporation\Nsight Compute 2022.1.0\;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Users\veter\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\veter\AppData\Local\Programs\Python\Python39\;C:\Users\veter\AppData\Local\Microsoft\WindowsApps;C:\Program Files\SPM;C:\Users\veter\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\veter\.dotnet\tools;C:\Program Files (x86)\ffmpeg-2021-09-08-git-5e7e2e5031-full_build\bin;C:\Users\veter\AppData\Local\Programs\Hyper\resources\bin;C:\Program Files\Java\apache-maven-3.8.3\bin;C:\Users\veter\AppData\Roaming\npm;C:\Users\veter\go\bin;C:\Users\veter\sycl_workspace\llvm\build\bin;C:\Users\veter\sycl_workspace\llvm\build\include\sycl\CL\sycl;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VC\Linux\bin\ConnectionManagerExe 
+
+C:\Users\veter\source\GPU-Labs-2>set LIB=C:\Users\veter\sycl_workspace\llvm\build\lib;C:\Users\veter\sycl_workspace\llvm\build\lib;C:\Users\veter\sycl_workspace\llvm\build\lib;C:\Users\veter\sycl_workspace\llvm\build\lib;C:\Users\veter\sycl_workspace\llvm\build\lib;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\lib\x64;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\lib\um\x64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.19041.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\10\lib\10.0.19041.0\um\x64;C:\Users\veter\sycl_workspace\llvm\build\lib 
+
+C:\Users\veter\source\GPU-Labs-2>clang++ -Wno-unknown-cuda-version -Wno-linker-warnings -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64_x86_64 gpu-1/main.cpp -o build/gpu-1.exe 
+
+C:\Users\veter\source\GPU-Labs-2>clang++ -Wno-unknown-cuda-version -Wno-linker-warnings -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64_x86_64 gpu-2/main.cpp -o build/gpu-2.exe 
+
+C:\Users\veter\source\GPU-Labs-2>clang++ -Wno-unknown-cuda-version -Wno-linker-warnings -fsycl -fsycl-targets=nvptx64-nvidia-cuda,spir64_x86_64 gpu-3/main.cpp -o build/gpu-3.exe 
+
+C:\Users\veter\source\GPU-Labs-2>build\gpu-1.exe
+
+Platform 0: Intel(R) OpenCL
+-- Device 0: Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+Platform 1: NVIDIA CUDA BACKEND
+-- Device 0: NVIDIA GeForce GTX 950
+Platform 2: SYCL host platform
+-- Device 0: SYCL host device
+
+Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+[0] Hello from platform 0 and device 0
+[1] Hello from platform 0 and device 0
+[2] Hello from platform 0 and device 0
+[3] Hello from platform 0 and device 0
+
+NVIDIA GeForce GTX 950
+[2] Hello from platform 1 and device 0
+[0] Hello from platform 1 and device 0
+[3] Hello from platform 1 and device 0
+[1] Hello from platform 1 and device 0
+
+SYCL host device
+[0] Hello from platform 2 and device 0
+[1] Hello from platform 2 and device 0
+[2] Hello from platform 2 and device 0
+[3] Hello from platform 2 and device 0
+
+
+C:\Users\veter\source\GPU-Labs-2>build\gpu-2.exe 10000 cpu 
+Number of rectangles:	10000 x 10000
+Target device:		Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+Kernel time:		18 ms
+Expected:		0.386822
+Computed:		0.386569
+Difference:		0.000253379
+
+C:\Users\veter\source\GPU-Labs-2>build\gpu-2.exe 10000 gpu 
+Number of rectangles:	10000 x 10000
+Target device:		NVIDIA GeForce GTX 950
+Kernel time:		8 ms
+Expected:		0.386822
+Computed:		0.386569
+Difference:		0.000253379
+
+C:\Users\veter\source\GPU-Labs-2>build\gpu-3.exe 2000 0.00001 200 gpu 
+Target device: NVIDIA GeForce GTX 950
+[Accessors] Time: 19 ms Accuracy: 0.000155397 (5.03911e-06) Iters: 25 / 200
+[  Shared ] Time: 16 ms Accuracy: 0.000155397 (5.03911e-06) Iters: 25 / 200
+[  Device ] Time: 17 ms Accuracy: 0.000155397 (5.03911e-06) Iters: 25 / 200
+
+C:\Users\veter\source\GPU-Labs-2>build\gpu-3.exe 2000 0.00001 200 cpu 
+Target device: Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz
+[Accessors] Time: 43 ms Accuracy: 0.000157058 (5.05195e-06) Iters: 25 / 200
+[  Shared ] Time: 43 ms Accuracy: 0.000157058 (5.05195e-06) Iters: 25 / 200
+[  Device ] Time: 42 ms Accuracy: 0.000157058 (5.05195e-06) Iters: 25 / 200
+
+C:\Users\veter\source\GPU-Labs-2>rmdir /q /s build 
